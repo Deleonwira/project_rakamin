@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian · Prototipe Perencanaan Kapabilitas</title>
+<style>
+:root{
+  --bg:#f5f5f7; --card:#ffffff; --ink:#1d1d1f; --ink2:#6e6e73; --ink3:#a1a1a6;
+  --line:rgba(0,0,0,.08); --blue:#0071e3; --blue-soft:rgba(0,113,227,.10);
+  --green:#248a3d; --green-soft:rgba(36,138,61,.12); --orange:#c93400; --orange-soft:rgba(201,52,0,.10);
+  --amber:#a15c00; --amber-soft:rgba(255,159,10,.16);
+  --nav:rgba(245,245,247,.78); --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#000;--card:#1c1c1e;--ink:#f5f5f7;--ink2:#a1a1a6;--ink3:#6e6e73;--line:rgba(255,255,255,.12);
+  --blue:#2997ff;--blue-soft:rgba(41,151,255,.16);--green:#30d158;--green-soft:rgba(48,209,88,.16);
+  --orange:#ff6a3d;--orange-soft:rgba(255,106,61,.16);--amber:#ffb340;--amber-soft:rgba(255,179,64,.16);
+  --nav:rgba(0,0,0,.72);--shadow:none}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Roboto,Arial,sans-serif;
+  font-size:15px;line-height:1.47;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;letter-spacing:inherit}
+.nav{position:sticky;top:0;z-index:20;background:var(--nav);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:1080px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:20px}
+.brand{font-weight:600;letter-spacing:-.02em;font-size:16px;white-space:nowrap}
+.brand span{color:var(--ink2);font-weight:400}
+.tabs{display:flex;gap:2px;margin-left:auto;overflow-x:auto}
+.tab{padding:6px 14px;border-radius:980px;color:var(--ink2);font-size:14px;white-space:nowrap;transition:.2s}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected=true]{background:var(--ink);color:var(--bg)}
+main{max-width:1080px;margin:0 auto;padding:48px 24px 96px}
+.view{display:none;animation:in .45s cubic-bezier(.2,.7,.2,1)}
+.view.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.eyebrow{color:var(--ink2);font-size:14px;font-weight:500;margin-bottom:8px}
+h1{font-size:clamp(32px,5.2vw,52px);line-height:1.07;letter-spacing:-.03em;font-weight:700;max-width:18em}
+h2{font-size:24px;letter-spacing:-.02em;font-weight:600;margin-bottom:6px}
+h3{font-size:17px;font-weight:600;letter-spacing:-.015em}
+.lead{color:var(--ink2);font-size:19px;line-height:1.42;max-width:36em;margin-top:16px;letter-spacing:-.015em}
+.sp{height:40px}.sp-s{height:20px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}.g3,.g2{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:20px;padding:24px;box-shadow:var(--shadow)}
+.stat .n{font-size:38px;font-weight:700;letter-spacing:-.035em;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .l{color:var(--ink2);font-size:13px;margin-top:8px;line-height:1.35}
+.pill{display:inline-block;font-size:12px;font-weight:500;padding:3px 10px;border-radius:980px;background:var(--bg);color:var(--ink2)}
+.pill.g{background:var(--green-soft);color:var(--green)}.pill.o{background:var(--orange-soft);color:var(--orange)}
+.pill.b{background:var(--blue-soft);color:var(--blue)}.pill.a{background:var(--amber-soft);color:var(--amber)}
+.note{color:var(--ink2);font-size:12.5px;line-height:1.45;margin-top:24px;max-width:60em}
+.note b{color:var(--ink);font-weight:600}
+.banner{display:flex;gap:10px;align-items:center;background:var(--amber-soft);color:var(--amber);padding:10px 16px;border-radius:12px;font-size:13px;margin-bottom:32px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:980px;background:var(--blue);color:#fff;font-size:15px;font-weight:500;transition:.2s}
+.btn:hover{filter:brightness(1.08)}.btn.ghost{background:var(--blue-soft);color:var(--blue)}
+.btn.sm{padding:7px 14px;font-size:13.5px}
+.link{color:var(--blue);font-size:15px}.link:hover{text-decoration:underline}
+/* gates */
+.gates{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.gates{grid-template-columns:1fr}}
+.gate .d{font-size:13px;color:var(--ink2);font-weight:500;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.gate p{color:var(--ink2);font-size:14px;margin-top:8px}
+/* family list */
+.fam{display:flex;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
+.fam:first-child{border-top:0}
+.fam .nm{flex:0 0 190px;font-weight:500}.fam .bar{flex:1;height:8px;background:var(--bg);border-radius:8px;overflow:hidden}
+.fam .bar i{display:block;height:100%;background:var(--ink3);border-radius:8px}
+.fam .v{flex:0 0 120px;text-align:right;color:var(--ink2);font-size:13px;font-variant-numeric:tabular-nums}
+.fam.hot{cursor:pointer}.fam.hot .bar i{background:var(--orange)}.fam.hot .nm{color:var(--ink)}
+.fam.hot:hover{background:var(--blue-soft);margin:0 -12px;padding:14px 12px;border-radius:12px;border-color:transparent}
+@media(max-width:700px){.fam{flex-wrap:wrap}.fam .nm{flex-basis:100%}.fam .v{flex:0 0 auto;text-align:left}}
+/* flow */
+.flow{position:relative}
+.flow{overflow-x:auto}.flow svg{width:100%;min-width:760px;height:auto;display:block;overflow:visible}
+@media(max-width:700px){.brand span{display:none}.nav-in{gap:10px;padding:10px 16px}main{padding:32px 16px 72px}}
+.flow .node{cursor:pointer}
+.flow .lk{transition:opacity .2s;opacity:.22;cursor:pointer}
+.flow.hov .lk{opacity:.07}.flow .lk.hl{opacity:.55!important}
+.flow text{font-family:inherit;fill:var(--ink)}
+.flow .sub{fill:var(--ink2);font-size:11.5px}
+.seg{display:inline-flex;background:var(--bg);border-radius:10px;padding:3px;gap:2px}
+.seg button{padding:6px 14px;border-radius:8px;font-size:13.5px;color:var(--ink2);transition:.15s}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:500}
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-weight:500;color:var(--ink2);text-align:left;font-size:12.5px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.tbl td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr.row{cursor:pointer}.tbl tr.row:hover td{background:var(--blue-soft)}
+.tbl td.m{font-variant-numeric:tabular-nums;color:var(--ink2)}
+.meter{display:inline-block;width:64px;height:6px;border-radius:6px;background:var(--bg);overflow:hidden;vertical-align:middle;margin-right:8px}
+.meter i{display:block;height:100%;border-radius:6px}
+.scroll{overflow-x:auto}
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.3s;z-index:30}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--card);z-index:31;transform:translateX(102%);transition:transform .4s cubic-bezier(.2,.7,.2,1),visibility .4s;overflow-y:auto;padding:28px;visibility:hidden}
+.sheet.on{transform:none;visibility:visible;box-shadow:-20px 0 60px rgba(0,0,0,.15)}
+.sheet .x{position:absolute;top:18px;right:18px;width:30px;height:30px;border-radius:50%;background:var(--bg);color:var(--ink2);font-size:16px}
+.sec{margin-top:26px}.sec h4{font-size:12.5px;color:var(--ink2);font-weight:500;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+.ev{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.ev:first-of-type{border-top:0}.ev small{color:var(--ink2);display:block;font-size:12.5px}
+.dot{flex:0 0 8px;height:8px;border-radius:50%;margin-top:7px}
+.route{padding:14px;border-radius:14px;background:var(--bg);margin-bottom:8px;cursor:pointer;border:1.5px solid transparent;transition:.15s}
+.route.sel{border-color:var(--blue);background:var(--blue-soft)}
+.route .t{display:flex;justify-content:space-between;gap:8px;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12px;padding:2px 9px;border-radius:980px;background:var(--card);color:var(--ink2)}
+.chip.miss{background:var(--orange-soft);color:var(--orange)}.chip.ok{background:var(--green-soft);color:var(--green)}.chip.unk{background:var(--amber-soft);color:var(--amber)}
+.actions{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:980px;font-size:14px;opacity:0;pointer-events:none;transition:.3s;z-index:40}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+/* sliders */
+.ctl{margin-bottom:22px}.ctl label{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
+.ctl label b{font-variant-numeric:tabular-nums;font-weight:600}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;border:.5px solid rgba(0,0,0,.1)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);border:0}
+.ctl small{display:block;color:var(--ink2);font-size:12px;margin-top:6px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{font-family:inherit;fill:var(--ink2);font-size:11px}
+.reg{display:grid;grid-template-columns:44px 1fr 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
+.reg b{color:var(--blue)}.reg span{color:var(--ink2)}
+@media(max-width:700px){.reg{grid-template-columns:36px 1fr}.reg span{grid-column:2}}
+footer{max-width:1080px;margin:0 auto;padding:0 24px 48px;color:var(--ink3);font-size:12px}
+</style>
+</head>
+<body>
+<header class="nav"><div class="nav-in">
+  <div class="brand">Meridian <span>Perencanaan Kapabilitas</span></div>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+</div></header>
+
+<main>
+<!-- 1. RINGKASAN -->
+<section class="view" id="v-home">
+  <div class="banner">● Prototipe demonstrasi. Seluruh profil pekerja adalah data sintetis; tidak ada data klien atau Payroll.</div>
+  <div class="eyebrow">Dasbor Direktur Human Capital · Hari 30</div>
+  <h1>Bukan siapa yang dikurangi. Ke mana pekerjaan itu bisa berpindah.</h1>
+  <p class="lead">Sekitar 4.200 setara-pekerjaan di keluarga Metering berubah dalam 18 bulan. Meridian menunjukkan jalur perpindahan, tingkat keyakinan, dan buktinya. Sistem merekomendasikan; manusia memutuskan.</p>
+  <div class="sp"></div>
+  <div class="grid g4">
+    <div class="card stat"><div class="n" data-count="6000">6.000</div><div class="l">pekerja keluarga Metering dalam cakupan</div></div>
+    <div class="card stat"><div class="n" style="color:var(--orange)" data-count="4200">4.200</div><div class="l">setara-pekerjaan berubah (70%); bukan jumlah PHK</div></div>
+    <div class="card stat"><div class="n" id="h-idle">Rp112 M</div><div class="l">biaya diam tahun 1 bila menunggu (skenario dasar)</div></div>
+    <div class="card stat"><div class="n" style="color:var(--green)" id="h-be">±37</div><div class="l">penempatan menutup fee Rp3,5 M</div></div>
+  </div>
+  <div class="sp"></div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <div><h2>Paparan menurut keluarga pekerjaan</h2><p style="color:var(--ink2);font-size:14px">Contoh ilustratif. Hanya Metering yang dianalisis mendalam pada tahap ini.</p></div>
+    </div>
+    <div class="sp-s"></div>
+    <div id="fams"></div>
+  </div>
+  <div class="sp"></div>
+  <h2>Tiga gerbang 90 hari</h2>
+  <p style="color:var(--ink2);margin-bottom:16px">Hari 30 dan 60 adalah gerbang Direktur dengan pra-baca Board; Hari 90 adalah gerbang formal (asumsi A14).</p>
+  <div class="gates">
+    <div class="card gate"><div class="d">Hari 30 <span class="pill g">Prototipe ini</span></div><h3>Prototipe dan peta awal</h3><p>Prototipe bisa diklik; identitas sampel Metering tersatukan tanpa Payroll; heatmap paparan v1.</p></div>
+    <div class="card gate"><div class="d">Hari 60 <span class="pill">Rencana</span></div><h3>Pilot 300–600 orang</h3><p>Profil terverifikasi manajer, kapasitas peran tujuan (V) dari pemilik fungsi, piagam disepakati serikat.</p></div>
+    <div class="card gate"><div class="d">Hari 90 <span class="pill">Gerbang formal</span></div><h3>Keputusan Board</h3><p>ROI dari data pilot dan paket keputusan: lanjut, ubah, perluas, atau hentikan.</p></div>
+  </div>
+  <div class="sp"></div>
+  <button class="btn" onclick="go('metering')">Buka keluarga Metering ›</button>
+  <p class="note"><b>Sumber dan asumsi.</b> Angka 52.000, 6.000, 70%, 18 bulan dan Rp3,5 M berasal dari brief kasus. 4.200 = 6.000 × 70% adalah setara-pekerjaan. Biaya diam dan titik impas dihitung dari upah publik BPS (bukan data klien) pada tab Ekonomi. Paparan keluarga selain Metering adalah ilustrasi dan belum didukung data.</p>
+</section>
+
+<!-- 2. METERING / AHA -->
+<section class="view" id="v-metering">
+  <div class="eyebrow">Keluarga Metering</div>
+  <h1>Setiap orang punya jalur, bukan sekadar label.</h1>
+  <p class="lead">Dari 6.000 pekerja, Meridian memetakan kecocokan ke empat jalur tujuan. Klik jalur atau kelompok untuk menyaring profil. Tebal garis menunjukkan jumlah pekerja.</p>
+  <div class="sp"></div>
+  <div class="card">
+    <div class="flow" id="flow"></div>
+  </div>
+  <div class="sp-s"></div>
+  <div class="grid g3">
+    <div class="card stat"><div class="n" id="m-elig">–</div><div class="l">pekerja memenuhi syarat setelah pelatihan layak (estimasi dari sampel)</div></div>
+    <div class="card stat"><div class="n" id="m-v">1.050</div><div class="l">kapasitas peran tujuan (V), angka kerja 25% dari 4.200, <b>belum terverifikasi</b></div></div>
+    <div class="card stat"><div class="n" style="color:var(--blue)" id="m-max">–</div><div class="l">batas atas penempatan = min(orang unik memenuhi syarat, total V)</div></div>
+  </div>
+  <p class="note"><b>Pelajaran dari layar ini:</b> hambatan bukan kemampuan pekerja, melainkan kapasitas peran tujuan. Karena itu pilot Hari 60 meminta V dari pemilik fungsi sebelum jalur dinyatakan layak.</p>
+  <div class="sp"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+    <div><h2>Profil sampel</h2><p style="color:var(--ink2);font-size:14px" id="flt-desc"></p></div>
+    <div style="display:flex;gap:8px;align-items:center"><div class="seg" id="conf-seg"></div><button class="btn ghost sm" id="clr" style="display:none" onclick="clearFilters()">Hapus filter</button></div>
+  </div>
+  <div class="card scroll" style="padding:8px 12px">
+    <table class="tbl"><thead><tr><th>ID sintetis</th><th>Kelompok</th><th>Wilayah</th><th>Jalur teratas</th><th>Keyakinan</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table>
+  </div>
+  <div style="text-align:center;margin-top:16px"><button class="link" id="more">Tampilkan lebih banyak</button></div>
+  <p class="note"><b>Sumber dan asumsi.</b> 240 profil sintetis dibuat acak (bukan data klien) untuk mendemokan alur. Jalur tujuan adalah hipotesis desain, belum daftar lowongan terverifikasi. Nilai V per jalur (380, 300, 220, 150) adalah angka kerja yang menjumlah 1.050. Skor dan keyakinan dihitung dari skill yang tercatat; skill kosong ditandai “belum diketahui”, bukan “tidak punya” (45% catatan skill kosong pada kasus ini).</p>
+</section>
+
+<!-- 3. EKONOMI -->
+<section class="view" id="v-econ">
+  <div class="eyebrow">Model ekonomi</div>
+  <h1>Ubah satu asumsi, lihat angkanya bergerak.</h1>
+  <p class="lead">Tanpa data Payroll, biaya per pegawai diturunkan dari upah sektor BPS. Geser kapasitas peran tujuan (V) dan lama otomasi untuk melihat rentang, bukan satu janji.</p>
+  <div class="sp"></div>
+  <div class="grid g2" style="align-items:start">
+    <div class="card">
+      <div class="ctl"><label>Skenario biaya per orang <b id="o-wage"></b></label>
+        <div class="seg" id="sc-seg"></div><small>Rendah Rp66,6 jt · Dasar Rp79,9 jt · Tinggi Rp88,0 jt per tahun (upah sektor Rp5,55 jt × 12 × beban 1,0 / 1,2 / ±1,3)</small></div>
+      <div class="ctl"><label>Lama otomasi tuntas (R) <b id="o-r"></b></label>
+        <div class="seg" id="r-seg"></div><small>Rollout smart meter Inggris dan Jerman meleset dari jadwal; 24 dan 36 bulan adalah sensitivitas.</small></div>
+      <div class="ctl"><label>Kapasitas peran tujuan terisi (V) <b id="o-v"></b></label>
+        <input type="range" id="s-v" min="5" max="75" step="5" value="25"><small>V tidak diketahui. 25% adalah angka kerja; pilot Hari 60 menggantikannya dengan data.</small></div>
+      <div class="ctl"><label>Jeda sebelum penempatan pertama <b id="o-lag"></b></label>
+        <input type="range" id="s-lag" min="0" max="6" step="1" value="3"></div>
+      <div class="ctl"><label>Biaya pelatihan per orang <b id="o-tr"></b></label>
+        <input type="range" id="s-tr" min="10" max="50" step="5" value="25"></div>
+      <div class="ctl" style="margin-bottom:0"><label>Biaya mengganti pegawai (× gaji tahunan) <b id="o-rec"></b></label>
+        <div class="seg" id="rec-seg"></div><small>Gallup 2019: 0,5–2× gaji tahunan. Dipakai ujung bawah agar konservatif.</small></div>
+    </div>
+    <div>
+      <div class="grid g2">
+        <div class="card stat"><div class="n" id="e-idle">–</div><div class="l">biaya diam tahun 1 bila tidak ada tindakan</div></div>
+        <div class="card stat"><div class="n" style="color:var(--green)" id="e-be">–</div><div class="l">penempatan untuk menutup fee Rp3,5 M</div></div>
+        <div class="card stat"><div class="n" id="e-r1">–</div><div class="l">rasio manfaat/biaya, tahun 1</div></div>
+        <div class="card stat"><div class="n" id="e-r2">–</div><div class="l">rasio manfaat/biaya, sampai bulan 24</div></div>
+      </div>
+      <div class="sp-s"></div>
+      <div class="card chart"><h3 style="margin-bottom:4px">Manfaat bersih kumulatif</h3><p style="color:var(--ink2);font-size:13px;margin-bottom:8px" id="e-net"></p><div id="chart"></div></div>
+    </div>
+  </div>
+  <p class="note"><b>Sumber dan asumsi.</b> Upah sektor listrik dan gas Rp5,55 juta per bulan (BPS Sakernas Mei 2026, via CNBC Indonesia 5 Agu 2026); iuran BPJS dan THR menurut CNN Indonesia, Bisnis, Setneg. Biaya diam = 4.200 × (6 ÷ R) × upah per orang. Manfaat = gaji yang dihindari + biaya pengganti yang dihindari; biaya = fee Rp3,5 M + pelatihan. Penempatan naik linear dari akhir jeda sampai bulan 24. Atrisi alami tidak dimodelkan, sehingga biaya diam cenderung terlalu tinggi. Biaya diam dan manfaat tidak boleh dijumlahkan.</p>
+</section>
+
+<!-- 4. ASUMSI -->
+<section class="view" id="v-assump">
+  <div class="eyebrow">Transparansi</div>
+  <h1>Apa yang kami tahu, apa yang kami asumsikan.</h1>
+  <p class="lead">Setiap angka di prototipe ini punya sumber atau alasan. Yang belum terverifikasi ditandai agar tidak disampaikan sebagai fakta.</p>
+  <div class="sp"></div>
+  <div class="card">
+    <div class="reg" style="border:0;padding-top:0"><span>ID</span><span>Asumsi</span><span>Cara memvalidasi</span></div>
+    <div class="reg"><b>A1</b><div>Biaya per pegawai Rp79,9 jt per tahun (66,6–88,0), dari upah sektor BPS plus beban wajib</div><span>Pita upah agregat dari Finance</span></div>
+    <div class="reg"><b>A3</b><div>Pekerjaan hilang linear; rata-rata 1.400 orang menganggur di tahun 1 (R = 18)</div><span>Jadwal pengadaan divisi terkait</span></div>
+    <div class="reg"><b>A5</b><div>V = 10–75% dari 4.200; angka kerja 25% (bukan hasil ukur)</div><span>V per jalur dari pemilik fungsi, Hari 60</span></div>
+    <div class="reg"><b>A6</b><div>Pelatihan Rp25 jt per orang (±3,75 bulan biaya pegawai dasar)</div><span>Penawaran vendor, biaya modul Moodle</span></div>
+    <div class="reg"><b>A7</b><div>Biaya mengganti pegawai 0,5× gaji (Gallup 0,5–2×)</div><span>Data rekrutmen divisi lain</span></div>
+    <div class="reg"><b>A8</b><div>Jeda 3 bulan sebelum penempatan pertama</div><span>Hasil pilot Hari 60</span></div>
+    <div class="reg"><b>A12</b><div>Pilot 300–600 orang di 1–2 unit (5–10% dari 6.000)</div><span>Kapasitas verifikator dan manajer</span></div>
+    <div class="reg"><b>A14</b><div>Hari 30 dan 60 gerbang Direktur dengan pra-baca Board; Hari 90 formal</div><span>Konfirmasi Direktur</span></div>
+  </div>
+  <div class="sp"></div>
+  <div class="grid g2">
+    <div class="card"><h3>Belum terverifikasi</h3><ul style="margin:12px 0 0 18px;color:var(--ink2);font-size:14px;line-height:1.7">
+      <li>Teks resmi PP 35/2021 dan isi PKB (Legal wajib mengonfirmasi)</li><li>Upah klien; yang dipakai adalah rata-rata nasional sektor</li><li>Data rollout smart meter Indonesia</li><li>V: kapasitas peran tujuan yang sebenarnya</li><li>Skill dan hasil kerja nyata pekerja (profil ini sintetis)</li></ul></div>
+    <div class="card"><h3>Prinsip desain</h3><ul style="margin:12px 0 0 18px;color:var(--ink2);font-size:14px;line-height:1.7">
+      <li>Data kosong bukan bukti tidak punya skill</li><li>Sistem merekomendasikan; penempatan lewat persetujuan manusia dan proses HR</li><li>Jabatan, gaji, dan kontrak tidak berubah oleh sistem</li><li>Payroll tidak diakses; akses per peran dan jejak audit</li><li>Komitmen usulan: tanpa PHK paksa akibat program (Legal konfirmasi)</li></ul></div>
+  </div>
+  <p class="note"><b>Sumber utama.</b> Brief kasus Rakamin 2026; BPS/CNBC Indonesia; CNN Indonesia; Bisnis; Setneg; Hukumonline; Talenta; Gallup (2019); McKinsey (2017); WEF (2025); NAO (2023); Bundesnetzagentur (2026). Daftar lengkap dengan tautan ada pada dokumen analisis dan lampiran deck.</p>
+</section>
+</main>
+
+<div class="scrim" id="scrim" onclick="closeSheet()"></div>
+<aside class="sheet" id="sheet" aria-hidden="true"></aside>
+<div class="toast" id="toast"></div>
+<footer>Meridian · prototipe demonstrasi · data sintetis · Project Meridian, Rakamin Product Consultant Case Study 2026</footer>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const fmt=(n,d=0)=>n.toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+const rp=(m)=>'Rp'+fmt(m,m<10?1:0)+' M';
+
+/* ---------- navigasi ---------- */
+const VIEWS=[['home','Ringkasan'],['metering','Metering'],['econ','Ekonomi'],['assump','Asumsi']];
+const tabs=$('#tabs');
+VIEWS.forEach(([id,t])=>{const b=document.createElement('button');b.className='tab';b.role='tab';b.textContent=t;b.dataset.v=id;b.onclick=()=>go(id);tabs.appendChild(b)});
+function go(id){
+  if(!VIEWS.some(v=>v[0]===id))id='home';
+  $$('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+id));
+  $$('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.v===id));
+  try{history.replaceState(null,'','#'+id)}catch(e){}
+  window.scrollTo({top:0});
+  if(id==='metering')drawFlow();
+  if(id==='econ')calc();
+}
+
+/* ---------- data sintetis ---------- */
+let seed=20261025;
+const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+const pick=a=>a[Math.floor(rnd()*a.length)];
+const CL=[
+  {id:'c1',nm:'Pembacaan meter rutin',n:3100,eq:2540,w:.30},
+  {id:'c2',nm:'Operasi manual lapangan',n:1650,eq:1090,w:.28},
+  {id:'c3',nm:'Penagihan lapangan',n:700,eq:350,w:.20},
+  {id:'c4',nm:'Pemeliharaan meter',n:550,eq:220,w:.22}
+];
+const SK=['Keselamatan kerja listrik (K3)','Pemeliharaan perangkat','Pemecahan masalah lapangan','Dasar IoT','Entri dan validasi data','Navigasi lapangan','Spreadsheet dasar','Pembacaan meter','Layanan pelanggan'];
+const RT=[
+  {id:'r1',nm:'Inspeksi dan pemeliharaan smart meter',V:380,req:[0,1,2],mo:3},
+  {id:'r2',nm:'Dukungan operasi perangkat dan IoT',V:300,req:[3,1,2],mo:5},
+  {id:'r3',nm:'Inspeksi aset dan keselamatan lapangan',V:220,req:[0,5,2],mo:4},
+  {id:'r4',nm:'Validasi data metering dan anomali',V:150,req:[4,6,7],mo:3}
+];
+const REG=['Wilayah 1','Wilayah 2','Wilayah 3','Wilayah 4','Wilayah 5','Wilayah 6'];
+const baseSkill={ // peluang punya skill menurut kelompok
+  c1:[.25,.2,.45,.1,.3,.5,.3,.95,.35], c2:[.5,.45,.55,.15,.2,.55,.15,.5,.1],
+  c3:[.1,.1,.4,.1,.5,.3,.5,.4,.8], c4:[.65,.8,.7,.35,.25,.4,.2,.6,.1]};
+const P=[];
+for(let i=0;i<240;i++){
+  let r=rnd(),c,acc=0;for(c of CL){acc+=c.w;if(r<=acc)break}
+  const sk=SK.map((s,j)=>{
+    if(rnd()<.45)return{s,st:'unk'};            // 45% catatan skill kosong
+    return rnd()<baseSkill[c.id][j]?{s,st:'ok',lv:1+Math.floor(rnd()*3)}:{s,st:'no'};
+  });
+  const sc=RT.map(rt=>{
+    let t=0,known=0;
+    rt.req.forEach(j=>{const k=sk[j];
+      if(k.st==='ok'){t+=Math.min(1,.4+k.lv*.2);known++}
+      else if(k.st==='no'){known++}
+      else t+=.35});
+    return{id:rt.id,score:Math.min(.98,t/3+(rnd()-.5)*.08),conf:Math.min(.95,Math.max(.25,.3+.6*known/3+(rnd()-.5)*.1))};
+  });
+  const top=sc.slice().sort((a,b)=>b.score-a.score)[0];
+  P.push({i,id:'SIN-'+String(10000+Math.floor(rnd()*89999)),cl:c.id,reg:pick(REG),ten:3+Math.floor(rnd()*30),sk,sc,top:top.id,
+    conf:top.conf,score:top.score,state:'Menunggu tinjauan',loc:null});
+}
+P.forEach((p,i)=>{if(i%9===0&&p.conf>=.6)p.state='Terverifikasi manajer'});
+const clName=id=>CL.find(c=>c.id===id).nm, rtOf=id=>RT.find(r=>r.id===id);
+const confLabel=c=>c>=.75?['Tinggi','var(--green)']:c>=.55?['Sedang','var(--amber)']:['Rendah','var(--orange)'];
+const SC=6000/P.length;
+
+/* ---------- ringkasan ---------- */
+const FAM=[['Metering (keluarga fokus)',.70,'4.200 setara-pekerjaan',true],['Administrasi tagihan',.62,'ilustrasi',false],['Layanan pelanggan',.45,'ilustrasi',false],['Perencanaan dan rekayasa',.25,'ilustrasi',false],['Pemeliharaan jaringan',.18,'ilustrasi',false],['Manajemen',.08,'ilustrasi',false]];
+$('#fams').innerHTML=FAM.map(([n,v,t,h])=>`<div class="fam ${h?'hot':''}" ${h?'onclick="go(\'metering\')" tabindex="0" role="button"':''}><div class="nm">${n}</div><div class="bar"><i style="width:${v*100}%"></i></div><div class="v">${t}${h?' ›':''}</div></div>`).join('');
+$$('[data-count]').forEach(el=>{const to=+el.dataset.count,t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);el.textContent=fmt(Math.round(to*e));if(k<1)requestAnimationFrame(f)})(t0)});
+
+/* ---------- Metering: aliran ---------- */
+const F={cl:null,rt:null,conf:'all',show:12};
+function counts(){ // matriks kelompok × jalur teratas, skala ke populasi
+  const m={};CL.forEach(c=>RT.forEach(r=>m[c.id+r.id]=0));
+  P.forEach(p=>m[p.cl+p.top]++);
+  const out={};CL.forEach(c=>{const tot=P.filter(p=>p.cl===c.id).length||1;RT.forEach(r=>out[c.id+r.id]=Math.round(m[c.id+r.id]/tot*c.n))});
+  return out;
+}
+function drawFlow(){
+  const m=counts(),W=980,H=330,lx=10,rx=W-10,nw=14,pad=14;
+  const lt=CL.reduce((a,c)=>a+c.n,0),avail=H-pad*(CL.length-1);
+  let y=0;const L=CL.map(c=>{const h=c.n/lt*avail;const o={c,y,h,off:0};y+=h+pad;return o});
+  const rtot=RT.map(r=>CL.reduce((a,c)=>a+m[c.id+r.id],0)),rsum=rtot.reduce((a,b)=>a+b,0);
+  y=0;const R=RT.map((r,i)=>{const h=Math.max(10,rtot[i]/rsum*(H-pad*3));const o={r,y,h,off:0,tot:rtot[i]};y+=h+pad;return o});
+  let links='';
+  L.forEach(l=>R.forEach(r=>{
+    const v=m[l.c.id+r.r.id];if(!v)return;
+    const h1=v/l.c.n*l.h,h2=v/r.tot*r.h;
+    const y1=l.y+l.off+h1/2,y2=r.y+r.off+h2/2;l.off+=h1;r.off+=h2;
+    const x1=lx+nw,x2=rx-nw,cx=(x1+x2)/2;
+    const act=(!F.cl||F.cl===l.c.id)&&(!F.rt||F.rt===r.r.id);
+    links+=`<path class="lk ${F.cl||F.rt?(act?'hl':''):''}" data-c="${l.c.id}" data-r="${r.r.id}" d="M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}" fill="none" stroke="${l.c.id==='c1'?'#0071e3':l.c.id==='c2'?'#5e5ce6':l.c.id==='c3'?'#30b0c7':'#34c759'}" stroke-width="${Math.max(1.5,(h1+h2)/2)}"><title>${l.c.nm} → ${r.r.nm}: ${fmt(v)} pekerja</title></path>`;
+  }));
+  const ln=L.map(l=>`<g class="node" data-c="${l.c.id}"><rect x="${lx}" y="${l.y}" width="${nw}" height="${l.h}" rx="5" fill="${F.cl===l.c.id?'var(--blue)':'var(--ink3)'}"/><text x="${lx+nw+10}" y="${l.y+l.h/2-2}" font-size="13" font-weight="600">${l.c.nm}</text><text class="sub" x="${lx+nw+10}" y="${l.y+l.h/2+14}">${fmt(l.c.n)} orang · ${fmt(l.c.eq)} setara-pekerjaan</text></g>`).join('');
+  const rn=R.map(r=>`<g class="node" data-r="${r.r.id}"><rect x="${rx-nw}" y="${r.y}" width="${nw}" height="${r.h}" rx="5" fill="${F.rt===r.r.id?'var(--blue)':'var(--green)'}"/><text x="${rx-nw-10}" y="${r.y+r.h/2-2}" text-anchor="end" font-size="13" font-weight="600">${r.r.nm}</text><text class="sub" x="${rx-nw-10}" y="${r.y+r.h/2+14}" text-anchor="end">kandidat ${fmt(r.tot)} · kapasitas V ${fmt(r.r.V)}</text></g>`).join('');
+  const el=$('#flow');el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Aliran kelompok pekerja ke jalur tujuan">${links}${ln}${rn}</svg>`;
+  $$('.node',el).forEach(n=>n.onclick=()=>{
+    if(n.dataset.c)F.cl=F.cl===n.dataset.c?null:n.dataset.c; else F.rt=F.rt===n.dataset.r?null:n.dataset.r;
+    F.show=12;drawFlow();drawRows()});
+  $$('.lk',el).forEach(l=>{l.onmouseenter=()=>{el.classList.add('hov');l.classList.add('hl')};l.onmouseleave=()=>{el.classList.remove('hov');if(!F.cl&&!F.rt)l.classList.remove('hl')}});
+  // statistik
+  const elig=P.filter(p=>p.score>=.6).length*SC,sumV=RT.reduce((a,r)=>a+r.V,0);
+  $('#m-elig').textContent=fmt(Math.round(elig/10)*10);
+  $('#m-max').textContent=fmt(Math.min(Math.round(elig),sumV));
+}
+$('#conf-seg').innerHTML=[['all','Semua'],['hi','Keyakinan tinggi'],['lo','Perlu tinjauan']].map(([k,t])=>`<button data-k="${k}" aria-pressed="${k==='all'}">${t}</button>`).join('');
+$$('#conf-seg button').forEach(b=>b.onclick=()=>{F.conf=b.dataset.k;F.show=12;$$('#conf-seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));drawRows()});
+function filtered(){return P.filter(p=>(!F.cl||p.cl===F.cl)&&(!F.rt||p.top===F.rt)&&(F.conf==='all'||(F.conf==='hi'?p.conf>=.75:p.conf<.55)))}
+function drawRows(){
+  const f=filtered();
+  $('#rows').innerHTML=f.slice(0,F.show).map(p=>{const[cl,col]=confLabel(p.conf);
+    return`<tr class="row" tabindex="0" onclick="openSheet(${p.i})" onkeydown="if(event.key==='Enter')openSheet(${p.i})"><td class="m">${p.id}</td><td>${clName(p.cl)}</td><td class="m">${p.reg}</td><td>${rtOf(p.top).nm}</td><td><span class="meter"><i style="width:${p.conf*100}%;background:${col}"></i></span>${cl}</td><td><span class="pill ${p.state.startsWith('Terverif')?'g':p.state==='Disetujui'?'b':p.state==='Ditolak'?'o':''}">${p.state}</span></td></tr>`}).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--ink2);padding:32px">Tidak ada profil yang cocok.</td></tr>';
+  $('#more').style.display=f.length>F.show?'':'none';
+  const parts=[];if(F.cl)parts.push(clName(F.cl));if(F.rt)parts.push(rtOf(F.rt).nm);
+  $('#flt-desc').textContent=`${fmt(f.length)} dari ${P.length} profil sampel`+(parts.length?' · '+parts.join(' → '):'');
+  $('#clr').style.display=(F.cl||F.rt)?'':'none';
+}
+$('#more').onclick=()=>{F.show+=12;drawRows()};
+function clearFilters(){F.cl=F.rt=null;F.show=12;drawFlow();drawRows()}
+
+/* ---------- panel profil ---------- */
+let cur=null;
+function openSheet(i,sel){
+  const p=P[i];cur=p;const rs=p.sc.slice().sort((a,b)=>b.score-a.score);
+  const selId=sel||p.selRoute||rs[0].id;p.selRoute=selId;
+  const[cl,col]=confLabel(p.conf);
+  const why=p.conf<.6?`Keyakinan ${cl.toLowerCase()}: lebih dari satu syarat jalur teratas belum tercatat. Kosong bukan berarti tidak punya skill; perlu wawancara terstruktur 20–30 menit sebelum rekomendasi dipakai.`:'Bukti cukup untuk rekomendasi awal, tetap memerlukan persetujuan manajer.';
+  const sr=rtOf(selId),scr=p.sc.find(s=>s.id===selId);
+  const gaps=sr.req.map(j=>p.sk[j]);
+  const nGap=gaps.filter(g=>g.st!=='ok'||g.lv<2).length;
+  const ev=[['Modul Moodle','Keselamatan kerja listrik, selesai 2024',p.sk[0].st==='ok'],['Evaluasi performa','Hanya data sejak 2023 yang dipakai; sebelumnya tidak andal',true],['Riwayat tugas lapangan',`Masa kerja ${p.ten} tahun, kelompok ${clName(p.cl).toLowerCase()}`,true],['Catatan skill SuccessFactors','Sebagian kolom kosong pada 45% profil',p.sk.some(s=>s.st==='unk')]];
+  $('#sheet').innerHTML=`<button class="x" onclick="closeSheet()" aria-label="Tutup">✕</button>
+  <div class="eyebrow">Profil sintetis · ${p.reg}</div><h2 style="font-size:28px;letter-spacing:-.03em">${p.id}</h2>
+  <p style="color:var(--ink2)">${clName(p.cl)} · ${p.ten} tahun masa kerja</p>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><span class="pill" style="color:${col}">Keyakinan ${cl} · ${Math.round(p.conf*100)}%</span><span class="pill ${p.state.startsWith('Terverif')?'g':p.state==='Disetujui'?'b':p.state==='Ditolak'?'o':''}">${p.state}</span></div>
+  <div class="sec"><h4>Jalur yang mungkin</h4>${rs.map(s=>{const r=rtOf(s.id);return`<div class="route ${s.id===selId?'sel':''}" onclick="openSheet(${i},'${s.id}')"><div class="t"><span>${r.nm}</span><span style="color:var(--ink2)">${Math.round(s.score*100)}%</span></div></div>`}).join('')}</div>
+  <div class="sec"><h4>Syarat jalur terpilih dan kesenjangan</h4>
+    <div class="chips">${gaps.map(g=>`<span class="chip ${g.st==='ok'&&g.lv>=2?'ok':g.st==='unk'?'unk':'miss'}">${g.s}${g.st==='unk'?' · belum diketahui':g.st==='no'?' · belum ada':g.lv<2?' · level dasar':''}</span>`).join('')}</div>
+    <p style="margin-top:12px;font-size:14px;color:var(--ink2)">${nGap?`Perkiraan pelatihan: <b style="color:var(--ink)">${Math.max(1,Math.round(nGap*sr.mo/3))}–${Math.max(2,Math.round(nGap*sr.mo/3)+2)} bulan</b> (asumsi, belum divalidasi vendor).`:'Memenuhi syarat tanpa pelatihan tambahan.'}</p></div>
+  <div class="sec"><h4>Bukti yang dipakai</h4>${ev.map(e=>`<div class="ev"><i class="dot" style="background:${e[2]?'var(--green)':'var(--amber)'}"></i><div>${e[0]}<small>${e[1]}</small></div></div>`).join('')}</div>
+  <div class="sec"><h4>Mengapa perlu tinjauan manusia</h4><p style="font-size:14px;color:var(--ink2)">${why}</p></div>
+  <div class="actions"><button class="btn" onclick="decide('Disetujui')">Setujui</button><button class="btn ghost" onclick="decide('Perlu wawancara')">Minta wawancara</button><button class="btn ghost" onclick="decide('Ditolak')">Tolak</button></div>
+  <p class="note" style="margin-top:18px">Keputusan ini hanya tercatat di prototipe. Pada sistem nyata, penempatan formal berjalan lewat persetujuan manajer, HR, dan Legal; jabatan, gaji, dan kontrak tidak diubah oleh sistem.</p>`;
+  $('#sheet').classList.add('on');$('#scrim').classList.add('on');$('#sheet').setAttribute('aria-hidden','false');
+}
+function closeSheet(){$('#sheet').classList.remove('on');$('#scrim').classList.remove('on');$('#sheet').setAttribute('aria-hidden','true')}
+function decide(s){cur.state=s;toast(s==='Disetujui'?'Rekomendasi disetujui (simulasi)':s==='Ditolak'?'Rekomendasi ditolak; profil kembali ke tinjauan':'Wawancara terstruktur dijadwalkan (simulasi)');closeSheet();drawRows()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+let tt;function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),2400)}
+
+/* ---------- ekonomi ---------- */
+const E={sc:'base',R:18,rec:.5};
+const WAGE={low:66.6,base:79.92,high:87.98},FEE=3.5;
+function seg(id,opts,key,after){
+  $(id).innerHTML=opts.map(([k,t])=>`<button data-k="${k}">${t}</button>`).join('');
+  const upd=()=>$$(id+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.k)===String(E[key])));
+  $$(id+' button').forEach(b=>b.onclick=()=>{E[key]=isNaN(+b.dataset.k)?b.dataset.k:+b.dataset.k;upd();calc()});upd();
+}
+seg('#sc-seg',[['low','Rendah'],['base','Dasar'],['high','Tinggi']],'sc');
+seg('#r-seg',[[18,'18 bulan'],[24,'24 bulan'],[36,'36 bulan']],'R');
+seg('#rec-seg',[[.5,'0,5×'],[1,'1,0×']],'rec');
+['s-v','s-lag','s-tr'].forEach(id=>$('#'+id).oninput=calc);
+function run(V,wage,rec,train,lag,H=24){
+  let placed=0,ben=0,cost=FEE,b12=0,c12=0;const cum=[0];
+  for(let m=1;m<=H;m++){const nw=m>lag?V/(H-lag):0;placed+=nw;
+    ben+=placed*wage/12/1000+nw*rec*wage/1000;cost+=nw*train/1000;
+    if(m===12){b12=ben;c12=cost}cum.push(ben-cost)}
+  return{b12,c12,ben,cost,cum};
+}
+function calc(){
+  const wage=WAGE[E.sc],pct=+$('#s-v').value,V=Math.round(4200*pct/100),lag=+$('#s-lag').value,tr=+$('#s-tr').value;
+  const idle=4200*(6/E.R)*wage/1000, be=FEE*1000/(wage*(1+E.rec)-tr);
+  const r=run(V,wage,E.rec,tr,lag);
+  $('#o-wage').textContent='Rp'+fmt(wage,1)+' jt';$('#o-r').textContent=E.R+' bulan';$('#o-v').textContent=pct+'% · '+fmt(V)+' orang';
+  $('#o-lag').textContent=lag+' bulan';$('#o-tr').textContent='Rp'+tr+' jt';$('#o-rec').textContent=fmt(E.rec,1)+'×';
+  $('#e-idle').textContent=rp(idle);
+  $('#e-be').textContent=be>0&&isFinite(be)?'±'+fmt(Math.ceil(be)):'tidak tercapai';
+  $('#e-r1').textContent=fmt(r.b12/r.c12,2)+'×';$('#e-r2').textContent=fmt(r.ben/r.cost,2)+'×';
+  $('#e-net').textContent='Manfaat bersih sampai bulan 24: '+rp(r.ben-r.cost)+' pada V = '+fmt(V)+' (fee dan pelatihan sudah dikurangkan)';
+  $('#h-idle').textContent=rp(4200*(6/18)*WAGE.base/1000);$('#h-be').textContent='±'+fmt(Math.ceil(FEE*1000/(WAGE.base*1.5-25)));
+  // grafik
+  const W=520,H=220,l=44,b=26,t=14,cum=r.cum,mx=Math.max(1,...cum),mn=Math.min(0,...cum),rg=(mx-mn)||1;
+  const X=i=>l+i/24*(W-l-8),Y=v=>t+(1-(v-mn)/rg)*(H-t-b);
+  const pts=cum.map((v,i)=>[X(i),Y(v)]),d='M'+pts.map(p=>p.join(',')).join(' L');
+  const area=d+` L${X(24)},${Y(0)} L${X(0)},${Y(0)} Z`;
+  const ticks=[0,.5,1].map(f=>mn+f*rg);
+  $('#chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Manfaat bersih kumulatif per bulan">
+    ${ticks.map(v=>`<line x1="${l}" x2="${W-8}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${l-6}" y="${Y(v)+4}" text-anchor="end">${fmt(v)}</text>`).join('')}
+    <line x1="${l}" x2="${W-8}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--ink3)" stroke-dasharray="3 3"/>
+    <path d="${area}" fill="var(--blue)" opacity=".10"/><path d="${d}" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${[0,6,12,18,24].map(i=>`<text x="${X(i)}" y="${H-6}" text-anchor="${i===24?'end':i===0?'start':'middle'}">bln ${i}</text>`).join('')}
+    <text x="${W-8}" y="${H-24}" text-anchor="end" style="font-size:10px">Rp miliar</text></svg>`;
+}
+
+/* ---------- mulai ---------- */
+drawRows();calc();
+go((location.hash||'#home').slice(1));
+</script>
+</body>
+</html>
